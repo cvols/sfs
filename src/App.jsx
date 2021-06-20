@@ -5,6 +5,7 @@ import { Grid, Typography, Button } from '@material-ui/core';
 
 import useStyles from './App.styles';
 import { Modal } from './Components';
+import { usePrevious } from './Hooks';
 
 const columns = [
   { field: 'col1', headerName: 'Creditor', width: 150 },
@@ -24,15 +25,17 @@ const getData = () => {
 export default function App() {
   const classes = useStyles();
   const [rows, setRows] = useState([]);
+  const [deletedRows, setDeletedRows] = useState([]);
   const [open, setOpen] = useState(false);
-  const newId = rows[rows.length - 1]?.id + 1;
+  const [total, setTotal] = useState(0);
+  const [selectionModel, setSelectionModel] = useState([]);
   const [newRow, setNewRow] = useState({
-    creditorName: '',
-    firstName: '',
-    lastName: '',
-    minPaymentPercentage: 0,
-    balance: 0,
-    id: newId
+    creditorName: 'f',
+    firstName: 'f',
+    lastName: 'f',
+    minPaymentPercentage: 2,
+    balance: 2000,
+    id: 0
   });
 
   useEffect(() => {
@@ -54,11 +57,23 @@ export default function App() {
     });
   }, [rows]);
 
-  const total = useMemo(() => {
-    if (rows.length > 0) {
-      return rows.reduce((a, b) => a + b.balance, 0);
+  useEffect(() => {
+    if (selectionModel.length === 0) {
+      return setTotal(modifyRows.reduce((a, b) => a + parseInt(b.col5), 0));
     }
-  }, [rows]);
+
+    if (selectionModel.length > 0) {
+      let selectedTotal = 0;
+      selectionModel.map(model => {
+        modifyRows.find(row => {
+          if (model === row.id) {
+            selectedTotal = selectedTotal + parseInt(row.col5);
+            return setTotal(selectedTotal);
+          }
+        });
+      });
+    }
+  }, [selectionModel, modifyRows]);
 
   const handleAddNewRow = () => {
     setRows(prev => [...prev, newRow]);
@@ -66,22 +81,47 @@ export default function App() {
     return setOpen(false);
   };
 
+  const handleRowSelection = e => {
+    return setDeletedRows([...deletedRows, ...rows.filter(r => r.id === e.data.id)]);
+  };
+
+  const handleDelete = () => {
+    return setRows(rows.filter(r => deletedRows.filter(sr => sr.id === r.id).length < 1));
+  };
+
   const handleOpen = () => {
-    setOpen(true);
+    const newId = rows[rows.length - 1].id + 1;
+
+    setNewRow(prev => ({
+      ...prev,
+      id: newId
+    }));
+    return setOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    return setOpen(false);
   };
 
   const moneyNumber = number => {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
+  const handleSelectionModelChange = e => {
+    setSelectionModel(e.selectionModel);
+  };
+
   return (
     <Grid style={{ height: 700, width: 800 }}>
-      <DataGrid rows={modifyRows} columns={columns} pageSize={15} checkboxSelection />
-      {total && (
+      <DataGrid
+        rows={modifyRows}
+        columns={columns}
+        pageSize={modifyRows.length + 1}
+        checkboxSelection
+        onRowSelected={handleRowSelection}
+        onSelectionModelChange={handleSelectionModelChange}
+      />
+      {total >= 0 && (
         <Grid container direction="row" className={classes.container}>
           <Grid container className={classes.flex}>
             <Typography className={classes.bold}>Total:</Typography>
@@ -93,6 +133,9 @@ export default function App() {
       )}
       <Button variant="contained" color="primary" onClick={handleOpen}>
         Add Debt
+      </Button>
+      <Button variant="contained" color="primary" onClick={handleDelete}>
+        Remove Debt
       </Button>
       <Modal open={open} handleClose={handleClose} newRow={newRow} setNewRow={setNewRow} handleAddNewRow={handleAddNewRow} />
     </Grid>
