@@ -9,6 +9,17 @@ const useStyles = makeStyles(theme => ({
   },
   container: {
     marginTop: 10
+  },
+  root: {
+    height: 700,
+    width: 800,
+    margin: `20px auto`
+  },
+  button: {
+    width: 200,
+    '&:last-child': {
+      marginTop: 10
+    }
   }
 }));
 

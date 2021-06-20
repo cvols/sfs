@@ -82,15 +82,21 @@ export default function App() {
   };
 
   const handleRowSelection = e => {
-    return setDeletedRows([...deletedRows, ...rows.filter(r => r.id === e.data.id)]);
+    return setDeletedRows([...deletedRows, ...rows.filter(row => row.id === e.data.id)]);
   };
 
   const handleDelete = () => {
-    return setRows(rows.filter(r => deletedRows.filter(sr => sr.id === r.id).length < 1));
+    if (selectionModel.length === rows.length) {
+      setDeletedRows(rows);
+      return setRows([]);
+    }
+
+    setSelectionModel([]);
+    return setRows(rows.filter(row => deletedRows.filter(selectedRow => selectedRow.id === row.id).length < 1));
   };
 
   const handleOpen = () => {
-    const newId = rows[rows.length - 1].id + 1;
+    const newId = rows[rows.length - 1]?.id + 1 || 1;
 
     setNewRow(prev => ({
       ...prev,
@@ -112,7 +118,7 @@ export default function App() {
   };
 
   return (
-    <Grid style={{ height: 700, width: 800 }}>
+    <Grid container className={classes.root}>
       <DataGrid
         rows={modifyRows}
         columns={columns}
@@ -131,12 +137,21 @@ export default function App() {
           </Grid>
         </Grid>
       )}
-      <Button variant="contained" color="primary" onClick={handleOpen}>
-        Add Debt
-      </Button>
-      <Button variant="contained" color="primary" onClick={handleDelete}>
-        Remove Debt
-      </Button>
+      <Grid container direction="column">
+        <Button variant="contained" color="primary" onClick={handleOpen} className={classes.button}>
+          Add Debt
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleDelete}
+          className={classes.button}
+          disabled={selectionModel.length === 0}
+        >
+          Remove Debt
+        </Button>
+      </Grid>
+
       <Modal open={open} handleClose={handleClose} newRow={newRow} setNewRow={setNewRow} handleAddNewRow={handleAddNewRow} />
     </Grid>
   );
