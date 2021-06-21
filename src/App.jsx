@@ -30,11 +30,11 @@ export default function App() {
   const [total, setTotal] = useState(0);
   const [selectionModel, setSelectionModel] = useState([]);
   const [newRow, setNewRow] = useState({
-    creditorName: 'f',
-    firstName: 'f',
-    lastName: 'f',
-    minPaymentPercentage: 2,
-    balance: 2000,
+    creditorName: '',
+    firstName: '',
+    lastName: '',
+    minPaymentPercentage: 0,
+    balance: 0,
     id: 0
   });
 
@@ -78,14 +78,23 @@ export default function App() {
   const handleAddNewRow = () => {
     setRows(prev => [...prev, newRow]);
 
+    setNewRow({
+      creditorName: '',
+      firstName: '',
+      lastName: '',
+      minPaymentPercentage: 0,
+      balance: 0,
+      id: 0
+    });
+
     return setOpen(false);
   };
 
   const handleRowSelection = e => {
-    return setDeletedRows([...deletedRows, ...rows.filter(row => row.id === e.data.id)]);
+    setDeletedRows([...deletedRows, ...rows.filter(r => r.id === e.data.id)]);
   };
 
-  const handleDelete = () => {
+  const handleDelete = e => {
     if (selectionModel.length === rows.length) {
       setDeletedRows(rows);
       return setRows([]);
@@ -114,7 +123,7 @@ export default function App() {
   };
 
   const handleSelectionModelChange = e => {
-    setSelectionModel(e.selectionModel);
+    return setSelectionModel(e.selectionModel);
   };
 
   return (
